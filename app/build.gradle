@@ -5,6 +5,9 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version("1.23.0")
 }
 
+group = "com.thosijulio.currencyview"
+version = "0.1.0"
+
 android {
     namespace = "com.thosijulio.currencyview"
     compileSdk = 33
