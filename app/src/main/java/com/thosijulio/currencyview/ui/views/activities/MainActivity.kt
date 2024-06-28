@@ -6,13 +6,17 @@ import android.view.View
 import android.widget.Adapter
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textview.MaterialTextView
 import com.thosijulio.currencyview.R
 import com.thosijulio.currencyview.common.ApiIdlingResource
 import com.thosijulio.currencyview.data.api.ApiServiceClient
+import com.thosijulio.currencyview.ui.adapters.CurrencyExchangeAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +29,9 @@ class MainActivity : AppCompatActivity() {
     private val autoCompleteTextView: AutoCompleteTextView by lazy { findViewById(R.id.currency_selection_input_layout)}
     private val loadCurrencyState: MaterialTextView by lazy { findViewById(R.id.load_currency_state) }
     private val selectCurrencyState: MaterialTextView by lazy { findViewById(R.id.select_currency_state) }
+    private val currencyRecyclerView: RecyclerView by lazy { findViewById(R.id.currency_rates_state) }
+    private val waitingResponseState: FrameLayout by lazy { findViewById(R.id.waiting_response_state) }
+
     private val apiInstance = ApiServiceClient.instance
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +61,31 @@ class MainActivity : AppCompatActivity() {
                         selectCurrencyState.visibility = View.VISIBLE
                         val adapter = ArrayAdapter(baseContext, android.R.layout.simple_dropdown_item_1line, symbolsList)
                         autoCompleteTextView.setAdapter(adapter)
+
+                        autoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
+                            selectCurrencyState.visibility = View.GONE
+                            waitingResponseState.visibility = View.VISIBLE
+                            val selectedCurrency = symbolsList[position]
+
+                            CoroutineScope(Dispatchers.IO).launch {
+                                ApiIdlingResource.increment()
+                                val currencyRatesResponse = apiInstance.getLatestRates(selectedCurrency)
+
+                                if (currencyRatesResponse.isSuccessful) {
+                                    withContext(Dispatchers.Main) {
+                                        waitingResponseState.visibility = View.GONE
+                                        currencyRecyclerView.visibility = View.VISIBLE
+                                        val currencyAdapter = CurrencyExchangeAdapter(currencyRatesResponse.body()?.rates ?: emptyMap())
+                                        currencyRecyclerView.layoutManager = LinearLayoutManager(baseContext)
+                                        currencyRecyclerView.adapter = currencyAdapter
+
+                                    }
+                                } else {
+                                    Log.e("API Error", "Error: ${currencyRatesResponse.code()} - ${currencyRatesResponse.errorBody()?.string()}")
+                                }
+                                ApiIdlingResource.decrement()
+                            }
+                        }
                     }
                 }   else {
                     val errorBody = response.errorBody()?.string()

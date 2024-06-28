@@ -13,7 +13,6 @@ interface ApiService {
 
     @GET("latest")
     suspend fun getLatestRates(
-        @Query("symbols")symbols: List<String>,
-        @Query("base") baseCurrency: String
+        @Query("base") baseCurrency: String,
     ): Response<CurrencyRateResponse>
 }
