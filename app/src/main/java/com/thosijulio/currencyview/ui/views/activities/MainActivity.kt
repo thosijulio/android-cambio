@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                                 } else {
                                     withContext(Dispatchers.Main) {
                                         waitingResponseState.visibility = View.GONE
-                                        MaterialAlertDialogBuilder(baseContext)
+                                        MaterialAlertDialogBuilder(this@MainActivity)
                                             .setTitle("Erro").setMessage("Erro ao carregar as taxas de câmbio")
                                             .setPositiveButton("OK", null).show()
                                         Log.e("API Error", "Error: ${currencyRatesResponse.code()} - ${currencyRatesResponse.errorBody()?.string()}")
@@ -96,7 +96,10 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }   else {
-                    MaterialAlertDialogBuilder(baseContext).setTitle("Erro").setMessage("Erro ao carregar as moedas disponíveis").setPositiveButton("OK", null).show()
+                    withContext(Dispatchers.Main) {
+                        loadCurrencyState.visibility = View.GONE
+                        MaterialAlertDialogBuilder(this@MainActivity).setTitle("Erro").setMessage("Erro ao carregar as moedas disponíveis").setPositiveButton("OK", null).show()
+                    }
                     val errorBody = response.errorBody()?.string()
                     Log.e("API Error", "Error: ${response.code()} - $errorBody")
 
@@ -104,15 +107,21 @@ class MainActivity : AppCompatActivity() {
                 ApiIdlingResource.decrement()
             } catch (exception: HttpException) {
                 ApiIdlingResource.decrement()
-                MaterialAlertDialogBuilder(baseContext).setTitle("Erro").setMessage("Erro ao carregar as moedas disponíveis").setPositiveButton("OK", null).show()
+                withContext(Dispatchers.Main) {
+                    MaterialAlertDialogBuilder(this@MainActivity).setTitle("Erro").setMessage("Erro ao carregar as moedas disponíveis").setPositiveButton("OK", null).show()
+                }
                 Log.e("HttpException", exception.message())
             } catch (exception: IOException) {
                 ApiIdlingResource.decrement()
-                MaterialAlertDialogBuilder(baseContext).setTitle("Erro").setMessage("Erro ao realizar a conexão com a API. Verifique a internet e tente novamente.").setPositiveButton("OK", null).show()
+                withContext(Dispatchers.Main) {
+                    MaterialAlertDialogBuilder(this@MainActivity).setTitle("Erro").setMessage("Erro ao realizar a conexão com a API. Verifique a sua conexão com a internet e tente novamente.").setPositiveButton("OK", null).show()
+                }
                 Log.e("IoException", exception.message ?: "Io Error")
             } catch (exception: Exception) {
                 ApiIdlingResource.decrement()
-                MaterialAlertDialogBuilder(baseContext).setTitle("Erro").setMessage("Ocorreu um erro inesperado. Tente novamente.").setPositiveButton("OK", null).show()
+                withContext(Dispatchers.Main) {
+                    MaterialAlertDialogBuilder(this@MainActivity).setTitle("Erro").setMessage("Ocorreu um erro inesperado. Tente novamente.").setPositiveButton("OK", null).show()
+                }
                 Log.e("Generic Exception", exception.message ?: "Unknown Error")
             }
         }
