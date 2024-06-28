@@ -18,3 +18,10 @@ O formato é baseado no [Keep a Changelog](https://keepachangelog.com/), e este 
 ## [0.1.0] - 2024-06-26
 ### Added
 - Layout da tela inicial da aplicação.
+
+## [Released]
+
+## [1.0.0] - 2024-06-28
+### Added
+- Dropdown List com opções de moeda selecionáveis
+- RecyclerView com dados de operações da moeda selecionada
