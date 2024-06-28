@@ -8,12 +8,11 @@ import retrofit2.http.Header
 import retrofit2.http.Query
 
 interface ApiService {
-    @GET("/symbols")
-    suspend fun getSymbols(@Header("apikey") apiKey: String): Response<CurrencySymbolResponse>
+    @GET("symbols")
+    suspend fun getSymbols(): Response<CurrencySymbolResponse>
 
-    @GET("/latest")
+    @GET("latest")
     suspend fun getLatestRates(
-        @Header("apikey") apiKey: String,
         @Query("symbols")symbols: List<String>,
         @Query("base") baseCurrency: String
     ): Response<CurrencyRateResponse>
